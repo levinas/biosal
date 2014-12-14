@@ -51,9 +51,9 @@ void framr_receive(actor_t *actor, message_t *message)
 void framr_start(actor_t *actor, message_t *message)
 {
     int name;
-    int index;
+    int rank;
     int size;
-    int neighbor_index;
+    int neighbor_rank;
     int neighbor_name;
     void * buffer;
 
@@ -73,12 +73,13 @@ void framr_start(actor_t *actor, message_t *message)
 
     core_vector_unpack(spawners, buffer);
     size = core_vector_size(spawners);
-    index = core_vector_index_of(spawners, &name);
-    neighbor_index = (index + 1) % size;
-    neighbor_name = core_vector_at_as_int(spawners, neighbor_index);
+    rank = core_vector_index_of(spawners, &name);
+    neighbor_rank = (rank + 1) % size;
+    neighbor_name = core_vector_at_as_int(spawners, neighbor_rank);
 
+    pm("Spawner world size = %d\n", size);
 
-    pm("about to send to neighbor\n");
+    pm("Spawner %d about to send hello to neighbor %d\n", rank, neighbor_rank);
     thorium_actor_send_empty(actor, neighbor_name, ACTION_FRAMR_HELLO);
     /* thorium_message_init(&new_message, ACTION_FRAMR_HELLO, 0, NULL); */
     /* thorium_actor_send(actor, neighbor_name, &new_message); */
@@ -128,7 +129,7 @@ void framr_notify(actor_t *actor, message_t *message)
     spawners = &self->spawners;
     size = core_vector_size(spawners);
 
-    pm("received NOTIFY\n");
+    pm("Boss received NOTIFY\n");
 
     ++self->completed;
     if (self->completed == size) {
