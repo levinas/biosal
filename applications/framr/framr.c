@@ -11,7 +11,7 @@ struct thorium_script framr_script = {
     .init = framr_init,
     .destroy = framr_destroy,
     .receive = framr_receive,
-    .size = sizeof(struct framr),
+    .size = sizeof(framr_t),
     .name = "framr",
     .author = "Fangfang Xia",
     .version = "0.0.0",
@@ -20,10 +20,10 @@ struct thorium_script framr_script = {
 
 void framr_init(struct thorium_actor *actor)
 {
-    struct framr *concrete_actor;
-    concrete_actor = thorium_actor_concrete_actor(actor);
-    core_vector_init(&concrete_actor->spawners, sizeof(int));
-    concrete_actor->completed = 0;
+    framr_t *self;
+    self = thorium_actor_concrete_actor(actor);
+    core_vector_init(&self->spawners, sizeof(int));
+    self->completed = 0;
 
     thorium_actor_add_action(actor, ACTION_START, framr_start);
     thorium_actor_add_action(actor, ACTION_FRAMR_HELLO, framr_hello);
@@ -34,9 +34,9 @@ void framr_init(struct thorium_actor *actor)
 
 void framr_destroy(struct thorium_actor *actor)
 {
-    struct framr *concrete_actor;
-    concrete_actor = thorium_actor_concrete_actor(actor);
-    core_vector_destroy(&concrete_actor->spawners);
+    framr_t *self;
+    self = thorium_actor_concrete_actor(actor);
+    core_vector_destroy(&self->spawners);
 }
 
 void framr_receive(struct thorium_actor *actor, struct thorium_message *message)
@@ -55,14 +55,14 @@ void framr_start(struct thorium_actor *actor, struct thorium_message *message)
     int neighbor_name;
     void * buffer;
 
-    struct framr *concrete_actor;
+    framr_t *self;
     struct core_vector *spawners;
 
-    concrete_actor = thorium_actor_concrete_actor(actor);
+    self = thorium_actor_concrete_actor(actor);
 
     name = thorium_actor_name(actor);
     buffer = thorium_message_buffer(message);
-    spawners = &concrete_actor->spawners;
+    spawners = &self->spawners;
     size = core_vector_size(spawners);
 
     pm("received ACTION_START\n");
@@ -72,6 +72,8 @@ void framr_start(struct thorium_actor *actor, struct thorium_message *message)
     index = core_vector_index_of(spawners, &name);
     neighbor_index = (index + 1) % size;
     neighbor_name = core_vector_at_as_int(spawners, neighbor_index);
+
+    thorium_actor_send_to_self_empty(actor, ACTION_ENABLE_LOG_LEVEL);
 
     pm("about to send to neighbor\n");
     thorium_actor_send_empty(actor, neighbor_name, ACTION_FRAMR_HELLO);
@@ -94,14 +96,14 @@ void framr_hello_reply(struct thorium_actor *actor, struct thorium_message *mess
     int source;
     int boss;
 
-    struct framr *concrete_actor;
+    framr_t *self;
     struct core_vector *spawners;
 
-    concrete_actor = thorium_actor_concrete_actor(actor);
+    self = thorium_actor_concrete_actor(actor);
 
     name = thorium_actor_name(actor);
     source = thorium_message_source(message);
-    spawners = &concrete_actor->spawners;
+    spawners = &self->spawners;
 
     pm("Actor %d is satisfied with a reply from the neighbor %d.\n", name, source);
 
@@ -115,18 +117,18 @@ void framr_notify(struct thorium_actor *actor, struct thorium_message *message)
 {
     int size;
 
-    struct framr *concrete_actor;
+    framr_t *self;
     struct core_vector *spawners;
 
-    concrete_actor = thorium_actor_concrete_actor(actor);
+    self = thorium_actor_concrete_actor(actor);
 
-    spawners = &concrete_actor->spawners;
+    spawners = &self->spawners;
     size = core_vector_size(spawners);
 
     pm("received NOTIFY\n");
 
-    ++concrete_actor->completed;
-    if (concrete_actor->completed == size) {
+    ++self->completed;
+    if (self->completed == size) {
         thorium_actor_send_range_empty(actor, spawners, ACTION_ASK_TO_STOP);
     }
 }

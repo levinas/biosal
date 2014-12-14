@@ -9,10 +9,10 @@
 #define ACTION_FRAMR_HELLO 0x00003fa9
 #define ACTION_FRAMR_HELLO_REPLY 0x00004791
 
-struct framr {
+typedef struct {
     struct core_vector spawners;
     int completed;
-};
+} framr_t;
 
 extern struct thorium_script framr_script;
 
