@@ -8,7 +8,7 @@
 #define pmsg(L, ...) thorium_actor_log_with_level(actor, L, __VA_ARGS__)
 #define pm(...) thorium_actor_log(actor, __VA_ARGS__)
 
-struct thorium_script framr_script = {
+script_t framr_script = {
     .identifier = SCRIPT_FRAMR,
     .init = framr_init,
     .destroy = framr_destroy,
@@ -20,7 +20,7 @@ struct thorium_script framr_script = {
     .description = "Feature Research for Antibiotic Microbial Resistance"
 };
 
-void framr_init(struct thorium_actor *actor)
+void framr_init(actor_t *actor)
 {
     framr_t *self;
     self = thorium_actor_concrete_actor(actor);
@@ -34,21 +34,21 @@ void framr_init(struct thorium_actor *actor)
     thorium_actor_add_action(actor, ACTION_ASK_TO_STOP, framr_ask_to_stop);
 }
 
-void framr_destroy(struct thorium_actor *actor)
+void framr_destroy(actor_t *actor)
 {
     framr_t *self;
     self = thorium_actor_concrete_actor(actor);
     core_vector_destroy(&self->spawners);
 }
 
-void framr_receive(struct thorium_actor *actor, struct thorium_message *message)
+void framr_receive(actor_t *actor, message_t *message)
 {
     thorium_actor_take_action(actor, message);
 }
 
 /* Message handlers */
 
-void framr_start(struct thorium_actor *actor, struct thorium_message *message)
+void framr_start(actor_t *actor, message_t *message)
 {
     int name;
     int index;
@@ -85,16 +85,16 @@ void framr_start(struct thorium_actor *actor, struct thorium_message *message)
     /* thorium_message_destroy(&new_message); */
 }
 
-void framr_hello(struct thorium_actor *actor, struct thorium_message *message)
+void framr_hello(actor_t *actor, message_t *message)
 {
     pm("received ACTION_FRAMR_HELLO\n");
 
     thorium_actor_send_reply_empty(actor, ACTION_FRAMR_HELLO_REPLY);
 }
 
-void framr_hello_reply(struct thorium_actor *actor, struct thorium_message *message)
+void framr_hello_reply(actor_t *actor, message_t *message)
 {
-    struct thorium_message new_message;
+    message_t new_message;
     int name;
     int source;
     int boss;
@@ -116,7 +116,7 @@ void framr_hello_reply(struct thorium_actor *actor, struct thorium_message *mess
     thorium_message_destroy(&new_message);
 }
 
-void framr_notify(struct thorium_actor *actor, struct thorium_message *message)
+void framr_notify(actor_t *actor, message_t *message)
 {
     int size;
 
@@ -136,7 +136,7 @@ void framr_notify(struct thorium_actor *actor, struct thorium_message *message)
     }
 }
 
-void framr_ask_to_stop(struct thorium_actor *actor, struct thorium_message *message)
+void framr_ask_to_stop(actor_t *actor, message_t *message)
 {
     pm("received ASK_TO_STOP\n");
     thorium_actor_send_to_self_empty(actor, ACTION_STOP);
@@ -145,7 +145,7 @@ void framr_ask_to_stop(struct thorium_actor *actor, struct thorium_message *mess
 
 /* Utility routines */
 
-void framr_process_args(struct thorium_actor *actor)
+void framr_process_args(actor_t *actor)
 {
     int argc;
     char **argv;
