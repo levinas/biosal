@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include <core/system/command.h>
+
 #define pmsg(L, ...) thorium_actor_log_with_level(actor, L, __VA_ARGS__)
 #define pm(...) thorium_actor_log(actor, __VA_ARGS__)
 
@@ -44,7 +46,7 @@ void framr_receive(struct thorium_actor *actor, struct thorium_message *message)
     thorium_actor_take_action(actor, message);
 }
 
-/* dispatch handlers */
+/* Message handlers */
 
 void framr_start(struct thorium_actor *actor, struct thorium_message *message)
 {
@@ -57,6 +59,8 @@ void framr_start(struct thorium_actor *actor, struct thorium_message *message)
 
     framr_t *self;
     struct core_vector *spawners;
+
+    framr_process_args(actor);
 
     self = thorium_actor_concrete_actor(actor);
 
@@ -73,7 +77,6 @@ void framr_start(struct thorium_actor *actor, struct thorium_message *message)
     neighbor_index = (index + 1) % size;
     neighbor_name = core_vector_at_as_int(spawners, neighbor_index);
 
-    thorium_actor_send_to_self_empty(actor, ACTION_ENABLE_LOG_LEVEL);
 
     pm("about to send to neighbor\n");
     thorium_actor_send_empty(actor, neighbor_name, ACTION_FRAMR_HELLO);
@@ -137,4 +140,20 @@ void framr_ask_to_stop(struct thorium_actor *actor, struct thorium_message *mess
 {
     pm("received ASK_TO_STOP\n");
     thorium_actor_send_to_self_empty(actor, ACTION_STOP);
+}
+
+
+/* Utility routines */
+
+void framr_process_args(struct thorium_actor *actor)
+{
+    int argc;
+    char **argv;
+
+    argc = thorium_actor_argc(actor);
+    argv = thorium_actor_argv(actor);
+
+    if (core_command_has_argument(argc, argv, "-v")) {
+        thorium_actor_send_to_self_empty(actor, ACTION_ENABLE_LOG_LEVEL);
+    }
 }

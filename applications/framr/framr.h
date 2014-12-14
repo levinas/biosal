@@ -20,10 +20,16 @@ void framr_init(struct thorium_actor *actor);
 void framr_destroy(struct thorium_actor *actor);
 void framr_receive(struct thorium_actor *actor, struct thorium_message *message);
 
+/* Message handlers */
+
 void framr_start(struct thorium_actor *actor, struct thorium_message *message);
 void framr_hello(struct thorium_actor *actor, struct thorium_message *message);
 void framr_hello_reply(struct thorium_actor *actor, struct thorium_message *message);
 void framr_notify(struct thorium_actor *actor, struct thorium_message *message);
 void framr_ask_to_stop(struct thorium_actor *actor, struct thorium_message *message);
+
+/* Utility routines */
+
+void framr_process_args(struct thorium_actor *actor);
 
 #endif /* _FRAMR_H_ */
