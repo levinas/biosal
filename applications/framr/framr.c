@@ -1,9 +1,11 @@
 
 #include "framr.h"
 
-#include <stdio.h>
+#include <genomics/helpers/command.h>
 
 #include <core/system/command.h>
+
+#include <stdio.h>
 
 #define pmsg(L, ...) thorium_actor_log_with_level(actor, L, __VA_ARGS__)
 #define pm(...) thorium_actor_log(actor, __VA_ARGS__)
@@ -25,6 +27,7 @@ void framr_init(actor_t *actor)
     framr_t *self;
     self = thorium_actor_concrete_actor(actor);
     core_vector_init(&self->spawners, sizeof(int));
+
     self->completed = 0;
 
     thorium_actor_add_action(actor, ACTION_START, framr_start);
@@ -157,4 +160,9 @@ void framr_process_args(actor_t *actor)
     if (core_command_has_argument(argc, argv, "-v")) {
         thorium_actor_send_to_self_empty(actor, ACTION_ENABLE_LOG_LEVEL);
     }
+
+    framr_t *self = thorium_actor_concrete_actor(actor);
+
+    self->kmer_length = biosal_command_get_kmer_length(argc, argv);
+    pm("kmer length set to %d\n", self->kmer_length);
 }

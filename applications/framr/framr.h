@@ -15,6 +15,7 @@ typedef struct thorium_script script_t;
 
 typedef struct {
     struct core_vector spawners;
+    int kmer_length;
     int completed;
 } framr_t;
 
